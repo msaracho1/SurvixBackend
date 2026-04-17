@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RouteCreateRequest(BaseModel):
@@ -39,6 +39,8 @@ class RouteReviewRequest(BaseModel):
 
 
 class RouteResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id_rutas: int
     nombre: str
     descripcion: str

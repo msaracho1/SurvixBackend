@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GuideCreateRequest(BaseModel):
@@ -33,6 +33,8 @@ class ProductCreateRequest(BaseModel):
 
 
 class GuideResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id_guias_supervivencia: int
     titulo: str
     descripcion: str

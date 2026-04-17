@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
@@ -26,6 +26,8 @@ class AuthTokenResponse(BaseModel):
 
 
 class MeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id_usuario: int
     email: EmailStr
     firebase_uid: str | None
