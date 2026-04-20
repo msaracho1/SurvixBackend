@@ -91,14 +91,15 @@ def get_points(id: int, db: Session = Depends(get_db)):
     ).all()
 
     return [
-        {
-            "id_ruta_punto": row[0],
-            "latlong": row[1],
-            "orden": row[2],
-            "id_rutas": row[3],
-        }
-        for row in rows
-    ]
+    {
+        "id_ruta_punto": row[0],
+        "lat": float(row[1].replace("POINT(", "").replace(")", "").split()[1]),
+        "lng": float(row[1].replace("POINT(", "").replace(")", "").split()[0]),
+        "orden": row[2],
+        "id_rutas": row[3],
+    }
+    for row in rows
+]
 
 
 @router.post("/{id}/points", dependencies=[Depends(require_admin)], status_code=status.HTTP_201_CREATED)
