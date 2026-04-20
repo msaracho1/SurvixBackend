@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Response, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user, require_admin
@@ -77,7 +77,28 @@ def remove_route(id: int, db: Session = Depends(get_db)):
 
 @router.get("/{id}/points")
 def get_points(id: int, db: Session = Depends(get_db)):
-    return db.execute(select(RoutePoint).where(RoutePoint.id_rutas == id).order_by(RoutePoint.orden.asc())).scalars().all()
+    _ = get_route_or_404(db, id)
+
+    rows = db.execute(
+        select(
+            RoutePoint.id_ruta_punto,
+            func.ST_AsText(RoutePoint.latlong),
+            RoutePoint.orden,
+            RoutePoint.id_rutas,
+        )
+        .where(RoutePoint.id_rutas == id)
+        .order_by(RoutePoint.orden.asc())
+    ).all()
+
+    return [
+        {
+            "id_ruta_punto": row[0],
+            "latlong": row[1],
+            "orden": row[2],
+            "id_rutas": row[3],
+        }
+        for row in rows
+    ]
 
 
 @router.post("/{id}/points", dependencies=[Depends(require_admin)], status_code=status.HTTP_201_CREATED)
