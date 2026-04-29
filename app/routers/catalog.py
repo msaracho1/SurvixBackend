@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.dependencies.db import get_db
-from app.models.entities import Activity, Difficulty, Role
+from app.models.entities import Activity, ComplexityLevel, Difficulty, GuideCategory, Role
 
 router = APIRouter(tags=["catalog"])
 
@@ -26,3 +26,15 @@ def get_difficulties(db: Session = Depends(get_db)) -> list[dict]:
 def get_roles(db: Session = Depends(get_db)) -> list[dict]:
     items = db.execute(select(Role).order_by(Role.id_rol)).scalars().all()
     return [{"id_rol": r.id_rol, "nombre": r.nombre} for r in items]
+
+
+@router.get("/guide-categories")
+def get_guide_categories(db: Session = Depends(get_db)) -> list[dict]:
+    items = db.execute(select(GuideCategory).order_by(GuideCategory.id_categoria_guias)).scalars().all()
+    return [{"id": c.id_categoria_guias, "nombre": c.nombre} for c in items]
+
+
+@router.get("/guide-levels")
+def get_guide_levels(db: Session = Depends(get_db)) -> list[dict]:
+    items = db.execute(select(ComplexityLevel).order_by(ComplexityLevel.id_nivel_complejidad)).scalars().all()
+    return [{"id": l.id_nivel_complejidad, "nombre": l.nombre} for l in items]

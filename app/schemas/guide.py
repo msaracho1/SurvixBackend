@@ -11,6 +11,8 @@ class GuideCreateRequest(BaseModel):
     duracion_min: int = Field(gt=0)
     id_categoria_guias: int
     id_nivel_complejidad: int
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class GuideUpdateRequest(BaseModel):
@@ -19,6 +21,8 @@ class GuideUpdateRequest(BaseModel):
     duracion_min: int | None = Field(default=None, gt=0)
     id_categoria_guias: int | None = None
     id_nivel_complejidad: int | None = None
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class GuideStepRequest(BaseModel):
@@ -42,3 +46,5 @@ class GuideResponse(BaseModel):
     fecha_creacion: datetime
     id_categoria_guias: int
     id_nivel_complejidad: int
+    latitud: float | None = None
+    longitud: float | None = None

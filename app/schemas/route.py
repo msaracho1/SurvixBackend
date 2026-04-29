@@ -13,6 +13,8 @@ class RouteCreateRequest(BaseModel):
     descripcion: str
     distancia_km: float = Field(gt=0)
     duracion_min: int = Field(gt=0)
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class RouteUpdateRequest(BaseModel):
@@ -23,6 +25,8 @@ class RouteUpdateRequest(BaseModel):
     descripcion: str | None = None
     distancia_km: float | None = Field(default=None, gt=0)
     duracion_min: int | None = Field(default=None, gt=0)
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class RoutePointRequest(BaseModel):
@@ -51,6 +55,8 @@ class RouteResponse(BaseModel):
     id_actividad: int
     id_dificultad: int
     id_ubicacion: int
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class RouteDetailResponse(BaseModel):

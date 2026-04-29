@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -149,6 +149,8 @@ class Route(Base):
     distancia_km: Mapped[float] = mapped_column(Numeric(6, 2), nullable=False)
     duracion_min: Mapped[int] = mapped_column(Integer, nullable=False)
     fecha_creacion: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    latitud: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitud: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     user: Mapped[User] = relationship("User", back_populates="routes")
     activity: Mapped[Activity] = relationship("Activity", back_populates="routes")
@@ -232,6 +234,8 @@ class SurvivalGuide(Base):
     fecha_creacion: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
     id_categoria_guias: Mapped[int] = mapped_column(ForeignKey("categoria_guias.id_categoria_guias"), nullable=False)
     id_nivel_complejidad: Mapped[int] = mapped_column(ForeignKey("nivel_complejidad.id_nivel_complejidad"), nullable=False)
+    latitud: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitud: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     steps: Mapped[list["GuideStep"]] = relationship("GuideStep", back_populates="guide")
     products: Mapped[list["RecommendedProduct"]] = relationship("RecommendedProduct", back_populates="guide")
