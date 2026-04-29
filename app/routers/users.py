@@ -1,15 +1,60 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, require_admin
 from app.dependencies.db import get_db
 from app.models.entities import User
+from app.schemas.auth import MeResponse
 from app.schemas.user import ProfileResponse, ProfileUpdateRequest, UserResponse, UserUpdateRequest
-from app.services.user_service import get_profile_by_user_id, get_user_or_404, update_profile, update_user
+from app.services.user_service import (
+    delete_user,
+    get_profile_by_user_id,
+    get_user_or_404,
+    list_users,
+    update_profile,
+    update_user,
+)
 
 router = APIRouter(tags=["users"])
+
+
+@router.get("/users", response_model=list[MeResponse])
+def get_users(
+    skip: int = 0,
+    limit: int = 200,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> list[MeResponse]:
+    _ = current_user
+    users = list_users(db, skip=skip, limit=limit)
+    return [
+        MeResponse(
+            id_usuario=u.id_usuario,
+            email=u.email,
+            firebase_uid=u.firebase_uid,
+            id_rol=u.id_rol,
+            role=u.role.nombre if u.role else "",
+            fecha_creacion=u.fecha_creacion,
+        )
+        for u in users
+    ]
+
+
+@router.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_user(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> None:
+    if current_user.id_usuario == id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No podés eliminar tu propia cuenta",
+        )
+    user = get_user_or_404(db, id)
+    delete_user(db, user)
 
 
 @router.get("/users/{id}", response_model=UserResponse)
