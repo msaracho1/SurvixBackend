@@ -17,6 +17,13 @@ from app.services.user_service import (
     update_user,
 )
 
+from pydantic import BaseModel
+
+
+class RoleUpdateRequest(BaseModel):
+    id_rol: int
+
+
 router = APIRouter(tags=["users"])
 
 
@@ -71,6 +78,29 @@ def put_user(id: int, payload: UserUpdateRequest, db: Session = Depends(get_db),
         raise HTTPException(status_code=403, detail="Not enough permissions")
     user = get_user_or_404(db, id)
     return update_user(db, user, payload)
+
+
+@router.patch("/users/{id}/role", response_model=MeResponse)
+def patch_user_role(
+    id: int,
+    payload: RoleUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> MeResponse:
+    if current_user.id_usuario == id:
+        raise HTTPException(status_code=400, detail="No podés cambiar tu propio rol")
+    user = get_user_or_404(db, id)
+    user.id_rol = payload.id_rol
+    db.commit()
+    db.refresh(user)
+    return MeResponse(
+        id_usuario=user.id_usuario,
+        email=user.email,
+        firebase_uid=user.firebase_uid,
+        id_rol=user.id_rol,
+        role=user.role.nombre if user.role else "",
+        fecha_creacion=user.fecha_creacion,
+    )
 
 
 @router.get("/profiles/{id_usuario}", response_model=ProfileResponse)
