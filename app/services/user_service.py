@@ -10,6 +10,17 @@ from app.models.entities import User, UserProfile
 from app.schemas.user import ProfileUpdateRequest, UserUpdateRequest
 
 
+def list_users(db: Session, skip: int = 0, limit: int = 200) -> list[User]:
+    return list(
+        db.execute(select(User).order_by(User.id_usuario).offset(skip).limit(limit)).scalars().all()
+    )
+
+
+def delete_user(db: Session, user: User) -> None:
+    db.delete(user)
+    db.commit()
+
+
 def get_user_or_404(db: Session, user_id: int) -> User:
     user = db.get(User, user_id)
     if not user:
