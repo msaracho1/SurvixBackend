@@ -36,7 +36,7 @@ class ProfileResponse(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     nombre: str = Field(min_length=1, max_length=255)
     apellido: str = Field(min_length=1, max_length=255)
-    foto_url: str = Field(min_length=1, max_length=500)
-    bio: str
-    ubicacion: str = Field(min_length=1, max_length=150)
-    fecha_nacimiento: date
+    foto_url: str | None = Field(default=None, max_length=500)
+    bio: str = ""
+    ubicacion: str = Field(default="", max_length=150)
+    fecha_nacimiento: date | None = None

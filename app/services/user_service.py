@@ -51,10 +51,40 @@ def get_profile_by_user_id(db: Session, user_id: int) -> UserProfile:
 def update_profile(db: Session, profile: UserProfile, payload: ProfileUpdateRequest) -> UserProfile:
     profile.nombre = payload.nombre
     profile.apellido = payload.apellido
-    profile.foto_url = payload.foto_url
+    if payload.foto_url is not None:
+        profile.foto_url = payload.foto_url
     profile.bio = payload.bio
     profile.ubicacion = payload.ubicacion
-    profile.fecha_nacimiento = payload.fecha_nacimiento
+    if payload.fecha_nacimiento is not None:
+        profile.fecha_nacimiento = payload.fecha_nacimiento
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
+def upsert_profile(db: Session, user_id: int, payload: ProfileUpdateRequest) -> UserProfile:
+    from datetime import date as date_type
+    profile = db.execute(select(UserProfile).where(UserProfile.id_usuario == user_id)).scalar_one_or_none()
+    if profile is None:
+        profile = UserProfile(
+            id_usuario=user_id,
+            nombre=payload.nombre,
+            apellido=payload.apellido,
+            foto_url=payload.foto_url or "",
+            bio=payload.bio,
+            ubicacion=payload.ubicacion,
+            fecha_nacimiento=payload.fecha_nacimiento or date_type.today(),
+        )
+        db.add(profile)
+    else:
+        profile.nombre = payload.nombre
+        profile.apellido = payload.apellido
+        if payload.foto_url is not None:
+            profile.foto_url = payload.foto_url
+        profile.bio = payload.bio
+        profile.ubicacion = payload.ubicacion
+        if payload.fecha_nacimiento is not None:
+            profile.fecha_nacimiento = payload.fecha_nacimiento
     db.commit()
     db.refresh(profile)
     return profile

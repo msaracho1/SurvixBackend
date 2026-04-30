@@ -48,6 +48,8 @@ def create_guide(db: Session, payload: GuideCreateRequest) -> SurvivalGuide:
         fecha_creacion=datetime.now(timezone.utc),
         id_categoria_guias=payload.id_categoria_guias,
         id_nivel_complejidad=payload.id_nivel_complejidad,
+        latitud=payload.latitud,
+        longitud=payload.longitud,
     )
     db.add(guide)
     db.commit()
