@@ -15,7 +15,6 @@ from app.services.user_service import (
     list_users,
     update_profile,
     update_user,
-    upsert_profile,
 )
 
 from pydantic import BaseModel
@@ -121,4 +120,5 @@ def put_profile(
         from fastapi import HTTPException
 
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return upsert_profile(db, id_usuario, payload)
+    profile = get_profile_by_user_id(db, id_usuario)
+    return update_profile(db, profile, payload)

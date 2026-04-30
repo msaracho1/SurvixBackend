@@ -79,8 +79,6 @@ def create_route(db: Session, payload: RouteCreateRequest, user_id: int) -> Rout
         distancia_km=payload.distancia_km,
         duracion_min=payload.duracion_min,
         fecha_creacion=datetime.now(timezone.utc),
-        latitud=payload.latitud,
-        longitud=payload.longitud,
     )
     db.add(route)
     db.commit()
