@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -148,6 +148,8 @@ class Route(Base):
     descripcion: Mapped[str] = mapped_column(Text, nullable=False)
     distancia_km: Mapped[float] = mapped_column(Numeric(6, 2), nullable=False)
     duracion_min: Mapped[int] = mapped_column(Integer, nullable=False)
+    latitud: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitud: Mapped[float | None] = mapped_column(Float, nullable=True)
     fecha_creacion: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
 
     user: Mapped[User] = relationship("User", back_populates="routes")
@@ -229,6 +231,8 @@ class SurvivalGuide(Base):
     titulo: Mapped[str] = mapped_column(String(45), nullable=False)
     descripcion: Mapped[str] = mapped_column(Text, nullable=False)
     duracion_min: Mapped[int] = mapped_column(Integer, nullable=False)
+    latitud: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitud: Mapped[float | None] = mapped_column(Float, nullable=True)
     fecha_creacion: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
     id_categoria_guias: Mapped[int] = mapped_column(ForeignKey("categoria_guias.id_categoria_guias"), nullable=False)
     id_nivel_complejidad: Mapped[int] = mapped_column(ForeignKey("nivel_complejidad.id_nivel_complejidad"), nullable=False)
