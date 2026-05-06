@@ -27,6 +27,8 @@ from app.services.route_service import (
     delete_route,
     delete_route_point,
     get_route_or_404,
+    is_favorited,
+    list_favorites,
     list_routes,
     remove_favorite,
     update_route,
@@ -46,9 +48,16 @@ def get_routes(
     duracion_min: int | None = None,
     duracion_max: int | None = None,
     texto: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    return list_routes(db, id_actividad, id_dificultad, id_ubicacion, distancia_min, distancia_max, duracion_min, duracion_max, texto)
+    return list_routes(db, id_actividad, id_dificultad, id_ubicacion, distancia_min, distancia_max, duracion_min, duracion_max, texto, limit, offset)
+
+
+@router.get("/favorites", response_model=list[RouteResponse])
+def get_favorites(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return list_favorites(db, current_user.id_usuario)
 
 
 @router.get("/{id}", response_model=RouteDetailResponse)
@@ -141,17 +150,20 @@ def post_review(id: int, payload: RouteReviewRequest, db: Session = Depends(get_
     return add_review(db, id, current_user.id_usuario, payload)
 
 
+@router.get("/{id}/favorite")
+def check_favorite(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return {"is_favorited": is_favorited(db, id, current_user.id_usuario)}
+
+
 @router.post("/{id}/favorite", status_code=status.HTTP_201_CREATED)
 def post_favorite(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    _ = current_user
     _ = get_route_or_404(db, id)
-    return add_favorite(db, id)
+    return add_favorite(db, id, current_user.id_usuario)
 
 
 @router.delete("/{id}/favorite", status_code=status.HTTP_204_NO_CONTENT)
 def delete_favorite(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    _ = current_user
-    remove_favorite(db, id)
+    remove_favorite(db, id, current_user.id_usuario)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

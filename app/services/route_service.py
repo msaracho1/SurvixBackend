@@ -20,6 +20,8 @@ def list_routes(
     duracion_min: int | None = None,
     duracion_max: int | None = None,
     texto: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
 ) -> list[Route]:
     query = select(Route)
     filters = []
@@ -44,7 +46,10 @@ def list_routes(
     if filters:
         query = query.where(and_(*filters))
 
-    return db.execute(query.order_by(Route.fecha_creacion.desc())).scalars().all()
+    query = query.order_by(Route.fecha_creacion.desc()).offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    return db.execute(query).scalars().all()
 
 
 def get_route_or_404(db: Session, route_id: int) -> Route:
@@ -144,20 +149,58 @@ def add_review(db: Session, route_id: int, user_id: int, payload: RouteReviewReq
     return review
 
 
-def add_favorite(db: Session, route_id: int) -> RouteFavorite:
-    favorite = RouteFavorite(id_rutas=route_id)
+def add_favorite(db: Session, route_id: int, user_id: int) -> RouteFavorite:
+    existing = db.execute(
+        select(RouteFavorite).where(
+            RouteFavorite.id_rutas == route_id,
+            RouteFavorite.id_usuario == user_id,
+        )
+    ).scalar_one_or_none()
+    if existing:
+        return existing
+    favorite = RouteFavorite(id_rutas=route_id, id_usuario=user_id)
     db.add(favorite)
     db.commit()
     db.refresh(favorite)
     return favorite
 
 
-def remove_favorite(db: Session, route_id: int) -> None:
-    favorite = db.execute(select(RouteFavorite).where(RouteFavorite.id_rutas == route_id)).scalar_one_or_none()
+def remove_favorite(db: Session, route_id: int, user_id: int) -> None:
+    favorite = db.execute(
+        select(RouteFavorite).where(
+            RouteFavorite.id_rutas == route_id,
+            RouteFavorite.id_usuario == user_id,
+        )
+    ).scalar_one_or_none()
     if not favorite:
         raise HTTPException(status_code=404, detail="Favorite not found")
     db.delete(favorite)
     db.commit()
+
+
+def is_favorited(db: Session, route_id: int, user_id: int) -> bool:
+    return (
+        db.execute(
+            select(RouteFavorite).where(
+                RouteFavorite.id_rutas == route_id,
+                RouteFavorite.id_usuario == user_id,
+            )
+        ).scalar_one_or_none()
+        is not None
+    )
+
+
+def list_favorites(db: Session, user_id: int) -> list[Route]:
+    return (
+        db.execute(
+            select(Route)
+            .join(RouteFavorite, RouteFavorite.id_rutas == Route.id_rutas)
+            .where(RouteFavorite.id_usuario == user_id)
+            .order_by(Route.fecha_creacion.desc())
+        )
+        .scalars()
+        .all()
+    )
 
 
 def add_download(db: Session, route_id: int, user_id: int) -> RouteDownload:

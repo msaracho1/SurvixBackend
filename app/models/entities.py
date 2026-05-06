@@ -199,6 +199,7 @@ class RouteFavorite(Base):
 
     id_favoritos_ruta: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_rutas: Mapped[int] = mapped_column(ForeignKey("rutas.id_rutas"), nullable=False)
+    id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
 
 
 class RouteDownload(Base):
