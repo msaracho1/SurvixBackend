@@ -45,6 +45,8 @@ def create_guide(db: Session, payload: GuideCreateRequest) -> SurvivalGuide:
         titulo=payload.titulo,
         descripcion=payload.descripcion,
         duracion_min=payload.duracion_min,
+        latitud=payload.latitud,
+        longitud=payload.longitud,
         fecha_creacion=datetime.now(timezone.utc),
         id_categoria_guias=payload.id_categoria_guias,
         id_nivel_complejidad=payload.id_nivel_complejidad,
