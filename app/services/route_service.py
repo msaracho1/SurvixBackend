@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, text
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.entities import Route, RouteDownload, RouteFavorite, RouteImage, RoutePoint, RouteReview
@@ -106,23 +106,59 @@ def delete_route(db: Session, route: Route) -> None:
     db.commit()
 
 
-def add_route_point(db: Session, route_id: int, payload: RoutePointRequest) -> RoutePoint:
-    point = RoutePoint(id_rutas=route_id, latlong=payload.latlong, orden=payload.orden)
-    db.add(point)
+def _parse_wkt_row(row: tuple) -> dict:
+    wkt_parts = row[1].replace("POINT(", "").replace(")", "").split()
+    return {
+        "id_ruta_punto": row[0],
+        "lat": float(wkt_parts[1]),
+        "lng": float(wkt_parts[0]),
+        "orden": row[2],
+        "id_rutas": row[3],
+    }
+
+
+def add_route_point(db: Session, route_id: int, payload: RoutePointRequest) -> dict:
+    db.execute(
+        text(
+            "INSERT INTO ruta_punto (latlong, orden, id_rutas) "
+            "VALUES (ST_GeomFromText(:wkt), :orden, :id_rutas)"
+        ),
+        {"wkt": payload.latlong, "orden": payload.orden, "id_rutas": route_id},
+    )
     db.commit()
-    db.refresh(point)
-    return point
+    row = db.execute(
+        text(
+            "SELECT id_ruta_punto, ST_AsText(latlong), orden, id_rutas "
+            "FROM ruta_punto WHERE id_rutas = :route_id ORDER BY id_ruta_punto DESC LIMIT 1"
+        ),
+        {"route_id": route_id},
+    ).one()
+    return _parse_wkt_row(row)
 
 
-def update_route_point(db: Session, point_id: int, payload: RoutePointRequest) -> RoutePoint:
-    point = db.get(RoutePoint, point_id)
-    if not point:
+def update_route_point(db: Session, point_id: int, payload: RoutePointRequest) -> dict:
+    exists = db.execute(
+        text("SELECT id_rutas FROM ruta_punto WHERE id_ruta_punto = :id"),
+        {"id": point_id},
+    ).one_or_none()
+    if not exists:
         raise HTTPException(status_code=404, detail="Route point not found")
-    point.latlong = payload.latlong
-    point.orden = payload.orden
+    db.execute(
+        text(
+            "UPDATE ruta_punto SET latlong = ST_GeomFromText(:wkt), orden = :orden "
+            "WHERE id_ruta_punto = :id"
+        ),
+        {"wkt": payload.latlong, "orden": payload.orden, "id": point_id},
+    )
     db.commit()
-    db.refresh(point)
-    return point
+    row = db.execute(
+        text(
+            "SELECT id_ruta_punto, ST_AsText(latlong), orden, id_rutas "
+            "FROM ruta_punto WHERE id_ruta_punto = :id"
+        ),
+        {"id": point_id},
+    ).one()
+    return _parse_wkt_row(row)
 
 
 def delete_route_point(db: Session, point_id: int) -> None:
