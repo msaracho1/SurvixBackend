@@ -30,6 +30,7 @@ class User(Base):
     profile: Mapped["UserProfile | None"] = relationship("UserProfile", back_populates="user", uselist=False)
     routes: Mapped[list["Route"]] = relationship("Route", back_populates="user")
     route_reviews: Mapped[list["RouteReview"]] = relationship("RouteReview", back_populates="user")
+    posts: Mapped[list["Post"]] = relationship("Post", back_populates="user")
 
 
 class UserProfile(Base):
@@ -275,8 +276,15 @@ class Post(Base):
 
     id_publicacion: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
+    titulo: Mapped[str | None] = mapped_column(String(255), nullable=True)
     contenido: Mapped[str] = mapped_column(Text, nullable=False)
+    categoria: Mapped[str | None] = mapped_column(String(100), nullable=True)
     fecha: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+
+    user: Mapped["User"] = relationship("User", back_populates="posts")
+    comments: Mapped[list["PostComment"]] = relationship("PostComment", back_populates="post", cascade="all, delete-orphan")
+    likes: Mapped[list["PostLike"]] = relationship("PostLike", back_populates="post", cascade="all, delete-orphan")
+    images: Mapped[list["PostImage"]] = relationship("PostImage", back_populates="post", cascade="all, delete-orphan")
 
 
 class PostComment(Base):
@@ -288,6 +296,9 @@ class PostComment(Base):
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
     id_publicacion: Mapped[int] = mapped_column(ForeignKey("publicacion.id_publicacion"), nullable=False)
 
+    post: Mapped["Post"] = relationship("Post", back_populates="comments")
+    user: Mapped["User"] = relationship("User")
+
 
 class PostLike(Base):
     __tablename__ = "likes_publi"
@@ -296,6 +307,8 @@ class PostLike(Base):
     id_publicacion: Mapped[int] = mapped_column(ForeignKey("publicacion.id_publicacion"), nullable=False)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
 
+    post: Mapped["Post"] = relationship("Post", back_populates="likes")
+
 
 class PostImage(Base):
     __tablename__ = "imagen_publicacion"
@@ -303,6 +316,8 @@ class PostImage(Base):
     id_imagen_publicacion: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     url: Mapped[str] = mapped_column(String(255), nullable=False)
     id_publicacion: Mapped[int] = mapped_column(ForeignKey("publicacion.id_publicacion"), nullable=False)
+
+    post: Mapped["Post"] = relationship("Post", back_populates="images")
 
 
 class Weather(Base):
