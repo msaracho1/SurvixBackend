@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
@@ -48,8 +48,8 @@ def get_routes(
     duracion_min: int | None = None,
     duracion_max: int | None = None,
     texto: str | None = None,
-    limit: int | None = None,
-    offset: int = 0,
+    limit: int | None = Query(default=None, le=200, ge=1),
+    offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ):
     return list_routes(db, id_actividad, id_dificultad, id_ubicacion, distancia_min, distancia_max, duracion_min, duracion_max, texto, limit, offset)
@@ -99,16 +99,20 @@ def get_points(id: int, db: Session = Depends(get_db)):
         .order_by(RoutePoint.orden.asc())
     ).all()
 
-    return [
-    {
-        "id_ruta_punto": row[0],
-        "lat": float(row[1].replace("POINT(", "").replace(")", "").split()[1]),
-        "lng": float(row[1].replace("POINT(", "").replace(")", "").split()[0]),
-        "orden": row[2],
-        "id_rutas": row[3],
-    }
-    for row in rows
-]
+    result = []
+    for row in rows:
+        try:
+            coords = row[1].replace("POINT(", "").replace(")", "").split()
+            result.append({
+                "id_ruta_punto": row[0],
+                "lat": float(coords[1]),
+                "lng": float(coords[0]),
+                "orden": row[2],
+                "id_rutas": row[3],
+            })
+        except (ValueError, IndexError, AttributeError):
+            continue
+    return result
 
 
 @router.post("/{id}/points", dependencies=[Depends(require_admin)], status_code=status.HTTP_201_CREATED)
