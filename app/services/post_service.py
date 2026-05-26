@@ -25,6 +25,12 @@ def _author_rol(user: User) -> str:
     return "Miembro de la comunidad"
 
 
+def _author_foto_url(user: User) -> str | None:
+    if user.profile and user.profile.foto_url:
+        return user.profile.foto_url
+    return None
+
+
 def _build_post_out(post: Post, current_user_id: int | None = None) -> PostOut:
     return PostOut(
         id=post.id_publicacion,
@@ -34,6 +40,7 @@ def _build_post_out(post: Post, current_user_id: int | None = None) -> PostOut:
         fecha=post.fecha,
         autor_nombre=_author_name(post.user),
         autor_rol=_author_rol(post.user),
+        autor_foto_url=_author_foto_url(post.user),
         imagen_url=post.images[0].url if post.images else None,
         likes_count=len(post.likes),
         liked_by_me=(

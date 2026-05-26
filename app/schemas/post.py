@@ -31,6 +31,7 @@ class PostOut(BaseModel):
     fecha: datetime
     autor_nombre: str
     autor_rol: str
+    autor_foto_url: str | None
     imagen_url: str | None
     likes_count: int
     liked_by_me: bool
