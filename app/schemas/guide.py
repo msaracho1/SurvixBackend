@@ -36,6 +36,10 @@ class ProductCreateRequest(BaseModel):
     imagen_url: str = Field(min_length=1, max_length=255)
 
 
+class GuideImageRequest(BaseModel):
+    url: str = Field(min_length=1, max_length=255)
+
+
 class GuideResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -48,3 +52,4 @@ class GuideResponse(BaseModel):
     id_nivel_complejidad: int
     latitud: float | None = None
     longitud: float | None = None
+    imagen_url: str | None = None

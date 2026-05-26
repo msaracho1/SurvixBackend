@@ -7,10 +7,11 @@ from sqlalchemy.orm import Session
 from app.dependencies.auth import get_current_user, require_admin
 from app.dependencies.db import get_db
 from app.models.entities import GuideStep, RecommendedProduct, User
-from app.schemas.guide import GuideCreateRequest, GuideResponse, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideResponse, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
 from app.services.guide_service import (
     add_download,
     add_favorite,
+    add_guide_image,
     add_product,
     add_step,
     create_guide,
@@ -79,6 +80,12 @@ def put_step(id: int, payload: GuideStepRequest, db: Session = Depends(get_db)):
 def remove_step(id: int, db: Session = Depends(get_db)):
     delete_step(db, id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{id}/images", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_admin)])
+def post_image(id: int, payload: GuideImageRequest, db: Session = Depends(get_db)):
+    _ = get_guide_or_404(db, id)
+    return add_guide_image(db, id, payload)
 
 
 @router.post("/{id}/favorite", status_code=status.HTTP_201_CREATED)

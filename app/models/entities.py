@@ -241,6 +241,21 @@ class SurvivalGuide(Base):
 
     steps: Mapped[list["GuideStep"]] = relationship("GuideStep", back_populates="guide")
     products: Mapped[list["RecommendedProduct"]] = relationship("RecommendedProduct", back_populates="guide")
+    images: Mapped[list["GuideImage"]] = relationship("GuideImage", back_populates="guide", cascade="all, delete-orphan")
+
+    @property
+    def imagen_url(self) -> str | None:
+        return self.images[0].url if self.images else None
+
+
+class GuideImage(Base):
+    __tablename__ = "guia_imagen"
+
+    id_guia_imagen: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    url: Mapped[str] = mapped_column("url", String(255), nullable=False)
+    id_guias_supervivencia: Mapped[int] = mapped_column(ForeignKey("guias_supervivencia.id_guias_supervivencia"), nullable=False)
+
+    guide: Mapped[SurvivalGuide] = relationship("SurvivalGuide", back_populates="images")
 
 
 class GuideStep(Base):

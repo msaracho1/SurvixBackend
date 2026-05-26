@@ -6,12 +6,12 @@ from fastapi import HTTPException
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.entities import GuideDownload, GuideFavorite, GuideStep, RecommendedProduct, SurvivalGuide
-from app.schemas.guide import GuideCreateRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.models.entities import GuideDownload, GuideFavorite, GuideImage, GuideStep, RecommendedProduct, SurvivalGuide
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
 
 
 def list_guides(db: Session, id_categoria_guias: int | None = None, id_nivel_complejidad: int | None = None, texto: str | None = None) -> list[SurvivalGuide]:
-    query = select(SurvivalGuide)
+    query = select(SurvivalGuide).options(joinedload(SurvivalGuide.images))
     filters = []
     if id_categoria_guias is not None:
         filters.append(SurvivalGuide.id_categoria_guias == id_categoria_guias)
@@ -22,7 +22,7 @@ def list_guides(db: Session, id_categoria_guias: int | None = None, id_nivel_com
         filters.append(or_(SurvivalGuide.titulo.ilike(text_like), SurvivalGuide.descripcion.ilike(text_like)))
     if filters:
         query = query.where(and_(*filters))
-    return db.execute(query.order_by(SurvivalGuide.fecha_creacion.desc())).scalars().all()
+    return db.execute(query.order_by(SurvivalGuide.fecha_creacion.desc())).unique().scalars().all()
 
 
 def get_guide_or_404(db: Session, guide_id: int) -> SurvivalGuide:
@@ -30,7 +30,7 @@ def get_guide_or_404(db: Session, guide_id: int) -> SurvivalGuide:
         db.execute(
             select(SurvivalGuide)
             .where(SurvivalGuide.id_guias_supervivencia == guide_id)
-            .options(joinedload(SurvivalGuide.steps), joinedload(SurvivalGuide.products))
+            .options(joinedload(SurvivalGuide.steps), joinedload(SurvivalGuide.products), joinedload(SurvivalGuide.images))
         )
         .scalars()
         .first()
@@ -124,6 +124,14 @@ def add_download(db: Session, guide_id: int, user_id: int) -> GuideDownload:
     db.commit()
     db.refresh(item)
     return item
+
+
+def add_guide_image(db: Session, guide_id: int, payload: GuideImageRequest) -> GuideImage:
+    image = GuideImage(id_guias_supervivencia=guide_id, url=payload.url)
+    db.add(image)
+    db.commit()
+    db.refresh(image)
+    return image
 
 
 def add_product(db: Session, guide_id: int, payload: ProductCreateRequest) -> RecommendedProduct:
