@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
-from app.routers import auth, catalog, guides, posts, routes, users
+from app.routers import auth, catalog, guides, posts, routes, users, upload
 
 app = FastAPI(title="Survix API", version="1.0.0")
 
@@ -25,6 +27,11 @@ app.include_router(users.router)
 app.include_router(routes.router)
 app.include_router(guides.router)
 app.include_router(posts.router)
+app.include_router(upload.router)
+
+# Serve uploaded files as static assets at /files/<filename>
+os.makedirs("uploads", exist_ok=True)
+app.mount("/files", StaticFiles(directory="uploads"), name="files")
 
 
 @app.get("/health")
