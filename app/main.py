@@ -7,15 +7,15 @@ from app.routers import auth, catalog, guides, posts, routes, users, upload
 
 app = FastAPI(title="Survix API", version="1.0.0")
 
+_raw_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://survixapp.com,https://www.survixapp.com,http://localhost:8081,http://localhost:19006,http://localhost:3000",
+)
+_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://survixapp.com",
-        "https://www.survixapp.com",
-        "http://localhost:8081",
-        "http://localhost:19006",
-        "http://localhost:3000",
-    ],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

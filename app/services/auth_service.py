@@ -14,7 +14,10 @@ from app.utils.security import create_access_token, hash_password, verify_passwo
 def _get_default_user_role(db: Session) -> Role:
     role = db.execute(select(Role).where(Role.nombre == "usuario")).scalar_one_or_none()
     if role is None:
-        raise HTTPException(status_code=500, detail="Role 'usuario' not found in DB")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Server misconfiguration: default role 'usuario' is missing. Contact an administrator.",
+        )
     return role
 
 
