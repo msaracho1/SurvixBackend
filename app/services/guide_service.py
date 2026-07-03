@@ -135,12 +135,14 @@ def add_guide_image(db: Session, guide_id: int, payload: GuideImageRequest) -> G
 
 
 def add_review(db: Session, guide_id: int, user_id: int, payload: GuideReviewRequest) -> GuideReview:
+    # first() rather than scalar_one_or_none(): defensive against duplicate
+    # rows for the same user/guide (mirrors the same guard in route_service).
     existing = db.execute(
         select(GuideReview).where(
             GuideReview.id_guias_supervivencia == guide_id,
             GuideReview.id_usuario == user_id,
         )
-    ).scalar_one_or_none()
+    ).scalars().first()
     if existing:
         existing.puntaje = payload.puntaje
         db.commit()

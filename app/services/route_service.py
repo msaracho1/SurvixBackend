@@ -178,12 +178,15 @@ def add_route_image(db: Session, route_id: int, payload: RouteImageRequest) -> R
 
 
 def add_review(db: Session, route_id: int, user_id: int, payload: RouteReviewRequest) -> RouteReview:
+    # Use first() rather than scalar_one_or_none(): historical data can have
+    # more than one review per user/route from before this dedup existed, and
+    # that must not crash new submissions with a MultipleResultsFound.
     existing = db.execute(
         select(RouteReview).where(
             RouteReview.id_rutas == route_id,
             RouteReview.id_usuario == user_id,
         )
-    ).scalar_one_or_none()
+    ).scalars().first()
     if existing:
         existing.puntaje = payload.puntaje
         db.commit()
