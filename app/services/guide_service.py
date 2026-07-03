@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.entities import GuideDownload, GuideFavorite, GuideImage, GuideStep, RecommendedProduct, SurvivalGuide
-from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.models.entities import GuideDownload, GuideFavorite, GuideImage, GuideReview, GuideStep, RecommendedProduct, SurvivalGuide
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
 
 
 def list_guides(db: Session, id_categoria_guias: int | None = None, id_nivel_complejidad: int | None = None, texto: str | None = None) -> list[SurvivalGuide]:
@@ -132,6 +132,25 @@ def add_guide_image(db: Session, guide_id: int, payload: GuideImageRequest) -> G
     db.commit()
     db.refresh(image)
     return image
+
+
+def add_review(db: Session, guide_id: int, user_id: int, payload: GuideReviewRequest) -> GuideReview:
+    existing = db.execute(
+        select(GuideReview).where(
+            GuideReview.id_guias_supervivencia == guide_id,
+            GuideReview.id_usuario == user_id,
+        )
+    ).scalar_one_or_none()
+    if existing:
+        existing.puntaje = payload.puntaje
+        db.commit()
+        db.refresh(existing)
+        return existing
+    review = GuideReview(id_guias_supervivencia=guide_id, id_usuario=user_id, puntaje=payload.puntaje)
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+    return review
 
 
 def add_product(db: Session, guide_id: int, payload: ProductCreateRequest) -> RecommendedProduct:

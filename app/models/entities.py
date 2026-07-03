@@ -30,6 +30,7 @@ class User(Base):
     profile: Mapped["UserProfile | None"] = relationship("UserProfile", back_populates="user", uselist=False)
     routes: Mapped[list["Route"]] = relationship("Route", back_populates="user")
     route_reviews: Mapped[list["RouteReview"]] = relationship("RouteReview", back_populates="user")
+    guide_reviews: Mapped[list["GuideReview"]] = relationship("GuideReview", back_populates="user")
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="user")
 
 
@@ -242,6 +243,7 @@ class SurvivalGuide(Base):
     steps: Mapped[list["GuideStep"]] = relationship("GuideStep", back_populates="guide")
     products: Mapped[list["RecommendedProduct"]] = relationship("RecommendedProduct", back_populates="guide")
     images: Mapped[list["GuideImage"]] = relationship("GuideImage", back_populates="guide", cascade="all, delete-orphan")
+    reviews: Mapped[list["GuideReview"]] = relationship("GuideReview", back_populates="guide")
 
     @property
     def imagen_url(self) -> str | None:
@@ -284,6 +286,18 @@ class GuideDownload(Base):
     fecha: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
     id_guias_supervivencia: Mapped[int] = mapped_column(ForeignKey("guias_supervivencia.id_guias_supervivencia"), nullable=False)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
+
+
+class GuideReview(Base):
+    __tablename__ = "resenia_guia"
+
+    id_resenia_guia: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    puntaje: Mapped[int] = mapped_column(Integer, nullable=False)
+    id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
+    id_guias_supervivencia: Mapped[int] = mapped_column(ForeignKey("guias_supervivencia.id_guias_supervivencia"), nullable=False)
+
+    user: Mapped[User] = relationship("User", back_populates="guide_reviews")
+    guide: Mapped[SurvivalGuide] = relationship("SurvivalGuide", back_populates="reviews")
 
 
 class Post(Base):

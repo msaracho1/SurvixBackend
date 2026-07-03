@@ -40,6 +40,10 @@ class GuideImageRequest(BaseModel):
     url: str = Field(min_length=1, max_length=255)
 
 
+class GuideReviewRequest(BaseModel):
+    puntaje: int = Field(ge=1, le=5)
+
+
 class GuideResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

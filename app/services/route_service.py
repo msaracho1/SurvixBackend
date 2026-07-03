@@ -178,6 +178,17 @@ def add_route_image(db: Session, route_id: int, payload: RouteImageRequest) -> R
 
 
 def add_review(db: Session, route_id: int, user_id: int, payload: RouteReviewRequest) -> RouteReview:
+    existing = db.execute(
+        select(RouteReview).where(
+            RouteReview.id_rutas == route_id,
+            RouteReview.id_usuario == user_id,
+        )
+    ).scalar_one_or_none()
+    if existing:
+        existing.puntaje = payload.puntaje
+        db.commit()
+        db.refresh(existing)
+        return existing
     review = RouteReview(id_rutas=route_id, id_usuario=user_id, puntaje=payload.puntaje)
     db.add(review)
     db.commit()

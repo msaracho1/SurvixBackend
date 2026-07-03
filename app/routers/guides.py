@@ -6,13 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user, require_admin
 from app.dependencies.db import get_db
-from app.models.entities import GuideStep, RecommendedProduct, User
-from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideResponse, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.models.entities import GuideReview, GuideStep, RecommendedProduct, User
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideResponse, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
 from app.services.guide_service import (
     add_download,
     add_favorite,
     add_guide_image,
     add_product,
+    add_review,
     add_step,
     create_guide,
     delete_guide,
@@ -104,6 +105,17 @@ def delete_favorite(id: int, db: Session = Depends(get_db), current_user: User =
 def post_download(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     _ = get_guide_or_404(db, id)
     return add_download(db, id, current_user.id_usuario)
+
+
+@router.get("/{id}/reviews")
+def get_reviews(id: int, db: Session = Depends(get_db)):
+    return db.execute(select(GuideReview).where(GuideReview.id_guias_supervivencia == id)).scalars().all()
+
+
+@router.post("/{id}/reviews", status_code=status.HTTP_201_CREATED)
+def post_review(id: int, payload: GuideReviewRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    _ = get_guide_or_404(db, id)
+    return add_review(db, id, current_user.id_usuario, payload)
 
 
 @router.get("/{id}/products")
