@@ -155,6 +155,10 @@ def add_review(db: Session, guide_id: int, user_id: int, payload: GuideReviewReq
     return review
 
 
+def list_products(db: Session) -> list[RecommendedProduct]:
+    return db.execute(select(RecommendedProduct).order_by(RecommendedProduct.id_productos_recomendados.desc())).scalars().all()
+
+
 def add_product(db: Session, guide_id: int, payload: ProductCreateRequest) -> RecommendedProduct:
     product = RecommendedProduct(
         id_guias_supervivencia=guide_id,

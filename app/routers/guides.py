@@ -21,6 +21,7 @@ from app.services.guide_service import (
     delete_step,
     get_guide_or_404,
     list_guides,
+    list_products,
     remove_favorite,
     update_guide,
     update_product,
@@ -38,6 +39,11 @@ def get_guides(
     db: Session = Depends(get_db),
 ):
     return list_guides(db, id_categoria_guias, id_nivel_complejidad, texto)
+
+
+@router.get("/products")
+def get_all_products(db: Session = Depends(get_db)):
+    return list_products(db)
 
 
 @router.get("/{id}", response_model=GuideResponse)

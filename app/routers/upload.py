@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 
 from app.dependencies.auth import get_current_user
 from app.models.entities import User
@@ -17,6 +17,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/image")
 async def upload_image(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ) -> dict:
@@ -36,4 +37,5 @@ async def upload_image(
     with open(path, "wb") as f:
         f.write(contents)
 
-    return {"url": f"https://survixapp.com/files/{filename}"}
+    base_url = str(request.base_url).rstrip("/")
+    return {"url": f"{base_url}/files/{filename}"}
