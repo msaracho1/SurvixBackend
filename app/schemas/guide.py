@@ -36,6 +36,12 @@ class ProductCreateRequest(BaseModel):
     imagen_url: str = Field(min_length=1, max_length=255)
 
 
+class ProductUpdateRequest(BaseModel):
+    nombre: str | None = Field(default=None, min_length=1, max_length=45)
+    url: str | None = Field(default=None, min_length=1, max_length=255)
+    imagen_url: str | None = Field(default=None, min_length=1, max_length=255)
+
+
 class GuideImageRequest(BaseModel):
     url: str = Field(min_length=1, max_length=255)
 

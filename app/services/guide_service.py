@@ -7,7 +7,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.entities import GuideDownload, GuideFavorite, GuideImage, GuideReview, GuideStep, RecommendedProduct, SurvivalGuide
-from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest, ProductUpdateRequest
 
 
 def list_guides(db: Session, id_categoria_guias: int | None = None, id_nivel_complejidad: int | None = None, texto: str | None = None) -> list[SurvivalGuide]:
@@ -166,3 +166,22 @@ def add_product(db: Session, guide_id: int, payload: ProductCreateRequest) -> Re
     db.commit()
     db.refresh(product)
     return product
+
+
+def update_product(db: Session, product_id: int, payload: ProductUpdateRequest) -> RecommendedProduct:
+    product = db.get(RecommendedProduct, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    for key, value in payload.model_dump(exclude_unset=True).items():
+        setattr(product, key, value)
+    db.commit()
+    db.refresh(product)
+    return product
+
+
+def delete_product(db: Session, product_id: int) -> None:
+    product = db.get(RecommendedProduct, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    db.delete(product)
+    db.commit()

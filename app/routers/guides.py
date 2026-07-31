@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.dependencies.auth import get_current_user, require_admin
 from app.dependencies.db import get_db
 from app.models.entities import GuideReview, GuideStep, RecommendedProduct, User
-from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideResponse, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest
+from app.schemas.guide import GuideCreateRequest, GuideImageRequest, GuideResponse, GuideReviewRequest, GuideStepRequest, GuideUpdateRequest, ProductCreateRequest, ProductUpdateRequest
 from app.services.guide_service import (
     add_download,
     add_favorite,
@@ -17,11 +17,13 @@ from app.services.guide_service import (
     add_step,
     create_guide,
     delete_guide,
+    delete_product,
     delete_step,
     get_guide_or_404,
     list_guides,
     remove_favorite,
     update_guide,
+    update_product,
     update_step,
 )
 
@@ -127,3 +129,14 @@ def get_products(id: int, db: Session = Depends(get_db)):
 def post_product(id: int, payload: ProductCreateRequest, db: Session = Depends(get_db)):
     _ = get_guide_or_404(db, id)
     return add_product(db, id, payload)
+
+
+@router.put("/products/{id}", dependencies=[Depends(require_admin)])
+def put_product(id: int, payload: ProductUpdateRequest, db: Session = Depends(get_db)):
+    return update_product(db, id, payload)
+
+
+@router.delete("/products/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+def remove_product(id: int, db: Session = Depends(get_db)):
+    delete_product(db, id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
