@@ -158,9 +158,11 @@ class Route(Base):
     activity: Mapped[Activity] = relationship("Activity", back_populates="routes")
     difficulty: Mapped[Difficulty] = relationship("Difficulty", back_populates="routes")
     location: Mapped[Location] = relationship("Location", back_populates="routes")
-    points: Mapped[list["RoutePoint"]] = relationship("RoutePoint", back_populates="route")
-    images: Mapped[list["RouteImage"]] = relationship("RouteImage", back_populates="route")
-    reviews: Mapped[list["RouteReview"]] = relationship("RouteReview", back_populates="route")
+    points: Mapped[list["RoutePoint"]] = relationship("RoutePoint", back_populates="route", cascade="all, delete-orphan")
+    images: Mapped[list["RouteImage"]] = relationship("RouteImage", back_populates="route", cascade="all, delete-orphan")
+    reviews: Mapped[list["RouteReview"]] = relationship("RouteReview", back_populates="route", cascade="all, delete-orphan")
+    favorites: Mapped[list["RouteFavorite"]] = relationship("RouteFavorite", back_populates="route", cascade="all, delete-orphan")
+    downloads: Mapped[list["RouteDownload"]] = relationship("RouteDownload", back_populates="route", cascade="all, delete-orphan")
 
     @property
     def imagen_url(self) -> str | None:
@@ -207,6 +209,8 @@ class RouteFavorite(Base):
     id_rutas: Mapped[int] = mapped_column(ForeignKey("rutas.id_rutas"), nullable=False)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
 
+    route: Mapped[Route] = relationship("Route", back_populates="favorites")
+
 
 class RouteDownload(Base):
     __tablename__ = "descargas_rutas"
@@ -215,6 +219,8 @@ class RouteDownload(Base):
     fecha: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
     id_rutas: Mapped[int] = mapped_column(ForeignKey("rutas.id_rutas"), nullable=False)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"), nullable=False)
+
+    route: Mapped[Route] = relationship("Route", back_populates="downloads")
 
 
 class GuideCategory(Base):
