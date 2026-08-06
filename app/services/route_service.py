@@ -23,7 +23,7 @@ def list_routes(
     limit: int | None = None,
     offset: int = 0,
 ) -> list[Route]:
-    query = select(Route)
+    query = select(Route).options(joinedload(Route.images))
     filters = []
     if id_actividad is not None:
         filters.append(Route.id_actividad == id_actividad)
@@ -49,7 +49,7 @@ def list_routes(
     query = query.order_by(Route.fecha_creacion.desc()).offset(offset)
     if limit is not None:
         query = query.limit(limit)
-    return db.execute(query).scalars().all()
+    return db.execute(query).unique().scalars().all()
 
 
 def get_route_or_404(db: Session, route_id: int) -> Route:
@@ -246,8 +246,10 @@ def list_favorites(db: Session, user_id: int) -> list[Route]:
             select(Route)
             .join(RouteFavorite, RouteFavorite.id_rutas == Route.id_rutas)
             .where(RouteFavorite.id_usuario == user_id)
+            .options(joinedload(Route.images))
             .order_by(Route.fecha_creacion.desc())
         )
+        .unique()
         .scalars()
         .all()
     )

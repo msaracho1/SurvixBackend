@@ -57,6 +57,7 @@ class RouteResponse(BaseModel):
     id_ubicacion: int
     latitud: float | None = None
     longitud: float | None = None
+    imagen_url: str | None = None
 
 
 class RouteDetailResponse(BaseModel):

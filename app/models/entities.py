@@ -162,6 +162,10 @@ class Route(Base):
     images: Mapped[list["RouteImage"]] = relationship("RouteImage", back_populates="route")
     reviews: Mapped[list["RouteReview"]] = relationship("RouteReview", back_populates="route")
 
+    @property
+    def imagen_url(self) -> str | None:
+        return self.images[0].url if self.images else None
+
 
 class RoutePoint(Base):
     __tablename__ = "ruta_punto"
