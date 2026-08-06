@@ -66,15 +66,14 @@ def remove_user(
 
 @router.get("/users/{id}", response_model=UserResponse)
 def get_user(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> UserResponse:
-    _ = current_user
+    if current_user.id_usuario != id and (not current_user.role or current_user.role.nombre.lower() != "admin"):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return get_user_or_404(db, id)
 
 
 @router.put("/users/{id}", response_model=UserResponse)
 def put_user(id: int, payload: UserUpdateRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> UserResponse:
     if current_user.id_usuario != id and (not current_user.role or current_user.role.nombre.lower() != "admin"):
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=403, detail="Not enough permissions")
     user = get_user_or_404(db, id)
     return update_user(db, user, payload)
@@ -117,7 +116,5 @@ def put_profile(
     current_user: User = Depends(get_current_user),
 ) -> ProfileResponse:
     if current_user.id_usuario != id_usuario and (not current_user.role or current_user.role.nombre.lower() != "admin"):
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return upsert_profile(db, id_usuario, payload)

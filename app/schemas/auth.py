@@ -17,6 +17,7 @@ class LoginRequest(BaseModel):
 class FirebaseSyncRequest(BaseModel):
     firebase_uid: str = Field(min_length=6, max_length=128)
     email: EmailStr
+    id_token: str | None = None  # Firebase ID token for server-side verification
 
 
 class AuthTokenResponse(BaseModel):
